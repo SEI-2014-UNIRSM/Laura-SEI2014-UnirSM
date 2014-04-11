@@ -1,0 +1,134 @@
+/*
+ 
+ Algoritmo modificato per esercizio durante il corso SEI 2014 @ UnirSM
+ Description: Wall bouncing and "generative" brush mashup. The "spider" bounces on the sides but with
+ a curved path, generating interesting web-like patterns.
+ You can also turn Manual mode and draw on your own.
+  
+ */
+ int xp = 0;
+ int yp = 0;
+
+
+
+int x = mouseX;
+int y = mouseY;
+float X, Y;
+float dirX = 2.7;                      // X axis Speed and direction (given by + or - sign)
+float dirY = 1.5;                      // Y axis Speed and direction (given by + or - sign)
+float offset = 0.75;
+ArrayList history;
+float drunkFactor = random(0.5, 2);    // increment to twirl the spider path
+int attraction = int(random(20, 60));  // affects threshold for creation of conjunction lines
+int lineDensity = 2;                   // affects number of conjunction lines drawn. Higher value = less lines
+boolean manualMode = false;            // mouse drawing disabled by default. Press m to enable
+
+ 
+void setup() {
+  size(750, 500);
+  X = width/2;
+  Y = height/2;
+  background(0);
+  smooth();
+  frameRate(200);                      // lower the framerate if drawing is too fast. Best at >100
+  colorMode(HSB, 360, 100, 100, 100);
+  history  = new ArrayList();
+  println("Attraction threshold: "+attraction+" drunkFactor: "+drunkFactor);
+}
+ 
+void draw() {
+   
+  web();  //cosa attiva??
+  
+  //tolti tutti gli if, e messi tutti sotto la funzione if mousePressed
+  if (mousePressed) {  
+    
+  stroke(90);
+  strokeWeight(6);
+  line(mouseX, mouseY,pmouseX, pmouseY);
+   
+    X += dirX+random(0.5, 2)*cos(radians(frameCount*drunkFactor%360));
+    X = mouseX;
+  
+
+    dirX = -(dirX + (random(offset)-offset/2))%2;
+    X += dirX+random(0.5, 2)*cos(radians(frameCount*drunkFactor%360));
+    X = mouseX;
+    }
+  
+ 
+  
+    Y += dirY+random(0.5, 2)*sin(radians(frameCount*drunkFactor%360));
+    Y = mouseY;
+ 
+ 
+    dirY = -(dirY + (random(offset)-offset/2))%2;
+    Y += dirY+random(0.5, 2)*sin(radians(frameCount*drunkFactor%360));
+    Y = mouseY;
+ 
+}
+
+ 
+ 
+void web() {
+  //aggiunto if mousePressed, altrimenti si disegnava da solo
+   if (mousePressed) { 
+  for (int i = 0; i < history.size(); i=i+lineDensity) {
+    PVector p = (PVector) history.get(i);
+    float d = dist(X, Y, p.x, p.y);
+    stroke(90, 70, 6+int(sq(11*cos(radians(i)))), d*4);
+    //aumentanto il numero prima di +int aumento i collegamenti
+    if (d > 1) {
+     //this control is necessary to avoid 1/d with d<1 that would multiply the stroke size
+     strokeWeight(1/d);
+    }
+    if (d < attraction) {
+      if (random(10) < lineDensity)
+      line(X, Y, p.x + 1, p.y + 1);
+    }
+ }
+  history.add(new PVector(X, Y));
+  }
+}
+ 
+void reset() {
+  background(0);
+  history.clear();                 // emptying coordinates from arraylist
+  drunkFactor = random(0.5, PI);   // and reassigning random value to basic variables
+  attraction = int(random(20, 50));
+  println("Attraction threshold: "+attraction+" drunkFactor: "+drunkFactor);
+   
+  if (manualMode) {
+    lineDensity = 5;
+  }
+  else {
+    lineDensity = 2;
+  }
+  redraw();
+}
+ 
+void keyReleased() {
+  switch(key) {
+  case 'm': // Manual mode
+  case 'M':
+    if (manualMode)
+    {
+      manualMode = false;
+    } 
+    else
+    {
+      manualMode = true;
+    }
+    reset();
+    break;
+  case 'r': // reset / redraw
+  case 'R':
+    reset();
+    break;
+  case 's': //save
+  case 'S':
+    println("Saved screenshot: Webs_####.png");
+    saveFrame("Webs_####.png");
+    break;
+  }
+}

@@ -1,0 +1,37 @@
+int w = 15;
+int h = 15;
+int index = 0;
+
+void setup() {
+  size(640, 384);
+  background(#0000ff);
+  strokeWeight(1);
+  //modificato spessore
+  stroke(250);
+  smooth();
+  }
+  
+  void draw(){
+    int x1 = w*index;
+    int x2 = x1 + w;
+    int y1 = h*23;//variato numeri
+    int y2 = h*24;//variato numeri
+    //si sposta il quadro blu, perchè?
+    
+    if (random(2) < 1) {
+      line(x2, y1, x1, y2);
+      }else {
+        line(x1, y1, x2, y2);
+      }
+    
+    index++;
+ if (index == width/w) { 
+ PImage p = get(9, 9, width, h*26);
+ // parte dello schermo che resta blu
+background(#000fff);
+set(2, 2, p);
+//luogo da dove inizia a disegnare le righe
+index = 8;
+   }
+  
+}

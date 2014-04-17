@@ -1,0 +1,167 @@
+/*
+Batman "Arkham City" Brush
+  */
+  
+ import processing.pdf.*;
+ boolean saveF = false;
+ boolean recordPDF = false;
+
+ int xp = 0;
+ int yp = 0;
+ 
+ int direction;
+
+int x = mouseX;
+int y = mouseY;
+float X, Y;
+
+float a = 0;
+float b = 0;
+
+float dirX = 2.7;                      // X axis Speed and direction (given by + or - sign)
+float dirY = 1.5;                      // Y axis Speed and direction (given by + or - sign)
+float offset = 0.75;
+ArrayList history;
+float drunkFactor = random(0.5, 2);    // increment to twirl the spider path
+int attraction = int(random(20, 60));  // affects threshold for creation of conjunction lines
+int lineDensity = 2;                   // affects number of conjunction lines drawn. Higher value = less lines
+
+
+ 
+void setup() {
+  size(1280, 720);
+  X = width/2;
+  Y = height/2;
+  background(0);
+  smooth();
+  frameRate(30); 
+  colorMode(HSB, 360, 100, 100, 100);
+ // lower the framerate if drawing is too fast. Best at >100
+   history  = new ArrayList();
+  println("Attraction threshold: "+attraction+" drunkFactor: "+drunkFactor);
+
+}
+ 
+void draw() {
+   
+  web();  
+ 
+  //float red = map(mouseX, 0, width, 0, 255);
+  float blue = map(mouseY, 0, width, 0, 90); 
+  float green = dist(mouseX, mouseY, width/2, height/2);
+   
+  float speed = dist(pmouseX, pmouseY, mouseX, mouseY); //la velocità con cui muovo il mouse
+  float alpha = map(speed, 0, 20, 0, 0);//regolo la trasparenza in base alla velocità
+  float lineWidth = map(speed, 0, 10, 13, 1); //spessore linea
+  lineWidth = constrain(lineWidth, 10, 10);
+  
+ 
+  
+
+  
+ 
+  //tolti tutti gli if, e messi tutti sotto la funzione if mousePressed
+  if (mousePressed) {  
+   
+  //triangoli, per idea di "spessore"  (Batman)
+  stroke(60);
+  strokeWeight(6);
+  triangle(mouseX, mouseY,mouseX+5, mouseY+5,mouseX+5, mouseY+5); 
+  
+  //pennello, la trasparenza dipende dalla posizione  (Batman)
+  fill(0, alpha);
+  stroke(green, blue);
+  strokeWeight(lineWidth);
+  line(pmouseX, pmouseY, mouseX, mouseY);
+  
+  
+  }
+ 
+ 
+ //legamenti verdi (Joker)  
+   for (int i=0; i<=mouseX; i++) {
+   direction = (int) random(30, 8);
+     } 
+   
+   X += dirX+random(0.5, 2)*cos(radians(frameCount*drunkFactor%360));
+    X = mouseX;
+  
+
+    dirX = -(dirX + (random(offset)-offset/2))%2;
+    X += dirX+random(0.5, 2)*cos(radians(frameCount*drunkFactor%360));
+    X = mouseX;
+    
+  
+    Y += dirY+random(0.5, 2)*sin(radians(frameCount*drunkFactor%360));
+    Y = mouseY;
+ 
+ 
+    dirY = -(dirY + (random(offset)-offset/2))%2;
+    Y += dirY+random(0.5, 2)*sin(radians(frameCount*drunkFactor%360));
+    Y = mouseY;
+    
+    
+    if (saveF) {
+    saveFrame("frame-#######.tga");
+   }
+    
+    
+    
+    
+    if (keyPressed) {
+      if (key=='1') filter (BLUR,1); // se tengo premuto il tasto la scritta va a scoparire
+      if (key=='2') filter (GRAY);
+      if (key == 'S' || key == 's') {
+    saveF = !saveF;
+   
+  }
+      
+  }
+        }
+        
+        void keyReleased() {
+  // ------ pdf export ------
+  // press 'r' to start pdf recording and 'e' to stop it
+  // ONLY by pressing 'e' the pdf is saved to disk!
+
+  if (key =='r' || key =='R') {
+    if (recordPDF == false) {
+      beginRecord(PDF, "####.pdf");
+      println("recording started");
+      recordPDF = true;
+    }
+  } 
+  else if (key == 'e' || key =='E') {
+    if (recordPDF) {
+      println("recording stopped");
+      endRecord();
+      recordPDF = false;
+    }
+  }
+}
+
+
+
+ 
+ 
+void web() {
+  //aggiunto if mousePressed, altrimenti si disegnava da solo
+   if (mousePressed) { 
+  for (int i = 0; i < history.size(); i=i+lineDensity) {
+    PVector p = (PVector) history.get(i);
+    float d = dist(X, Y, p.x, p.y);
+    stroke(90, 70, 6+int(sq(11*cos(radians(i)))), d*4);
+    //aumentanto il numero prima di +int aumento i collegamenti
+    if (d > 1) {
+     //this control is necessary to avoid 1/d with d<1 that would multiply the stroke size
+     strokeWeight(1/d);
+    }
+    if (d < attraction) {
+      if (random(10) < lineDensity)
+      line(X, Y, p.x + 1, p.y + 1);
+    }
+ }
+  history.add(new PVector(X, Y));
+  }
+}
+ 
